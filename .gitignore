@@ -1,0 +1,45 @@
+# Vim swap files
+*.swp
+*.swo
+*~
+
+# Vim session files
+Session.vim
+.session
+
+# Neovim
+.nvim/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Tags
+tags
+tags.lock
+tags.temp
+
+# Test files
+test/
+*.test.vim
+
+# Documentation build artifacts
+doc/tags
+
+# Logs
+*.log
+
+# Security - Never commit these
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*secret*
+*credential*
+config.local.*

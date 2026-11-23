@@ -1,0 +1,297 @@
+*kiro-review.txt*  Persistent Kiro CLI integration for code review workflows
+
+==============================================================================
+CONTENTS                                                *kiro-review-contents*
+
+    1. Introduction ........................... |kiro-review-introduction|
+    2. Requirements ........................... |kiro-review-requirements|
+    3. Installation ........................... |kiro-review-installation|
+    4. Configuration .......................... |kiro-review-configuration|
+    5. Commands ............................... |kiro-review-commands|
+    6. Keybindings ............................ |kiro-review-keybindings|
+    7. Visual Selection Actions ............... |kiro-review-actions|
+    8. Workflows .............................. |kiro-review-workflows|
+    9. Troubleshooting ........................ |kiro-review-troubleshooting|
+   10. License ................................ |kiro-review-license|
+
+==============================================================================
+1. INTRODUCTION                                     *kiro-review-introduction*
+
+kiro-review.nvim integrates Kiro CLI directly into Neovim with a persistent,
+full-height terminal interface. Unlike other Kiro plugins, this one focuses
+on code review workflows with structured visual selection menus, read-only
+advisory mode, and session persistence.
+
+Key Features:
+  • Persistent terminal interface with full-height vertical split
+  • Visual selection actions menu with 9 preset actions
+  • Read-only advisory mode (no automatic file modifications)
+  • Session management with resume picker
+  • Comprehensive keybindings for all modes
+  • Custom agent support
+  • Smart code context passing
+
+==============================================================================
+2. REQUIREMENTS                                     *kiro-review-requirements*
+
+  • Neovim 0.5.0 or higher
+  • Kiro CLI installed and configured (https://www.kiro.ai/)
+  • Terminal with ANSI color support (recommended)
+
+==============================================================================
+3. INSTALLATION                                     *kiro-review-installation*
+
+Using vim-plug: >
+    Plug 'ahmedwaqar/kiro-review.nvim'
+<
+
+Using packer.nvim: >
+    use 'ahmedwaqar/kiro-review.nvim'
+<
+
+Using lazy.nvim: >
+    {
+      'ahmedwaqar/kiro-review.nvim',
+      keys = {
+        { '<leader>kc', '<cmd>KiroOpen<cr>', desc = 'Open Kiro Chat' },
+        { '<leader>ko', '<cmd>KiroToggle<cr>', desc = 'Toggle Kiro Window' },
+      },
+    }
+<
+
+Manual installation:
+  1. Clone the repository to your Neovim plugin directory
+  2. Add to runtimepath if needed
+
+==============================================================================
+4. CONFIGURATION                                   *kiro-review-configuration*
+
+Global Variables~
+
+*g:kiro_chat_width*
+    Width of the Kiro terminal window in columns.
+    Default: 65 >
+        let g:kiro_chat_width = 80
+<
+
+*g:kiro_agent*
+    Kiro agent to use for the chat session.
+    Default: 'nvim-reviewer' >
+        let g:kiro_agent = 'kiro_default'
+<
+
+==============================================================================
+5. COMMANDS                                             *kiro-review-commands*
+
+                                                                  *:KiroOpen*
+:KiroOpen               Open or focus the persistent Kiro chat window.
+                        Creates a new terminal if none exists, or shows
+                        the existing hidden window.
+
+                                                                 *:KiroClose*
+:KiroClose              Hide the Kiro window while preserving the process
+                        and chat context. The terminal continues running
+                        in the background.
+
+                                                                *:KiroToggle*
+:KiroToggle             Toggle Kiro window visibility. Opens if closed,
+                        closes if open.
+
+                                                                  *:KiroStop*
+:KiroStop               Stop Kiro completely and close the terminal.
+                        The session is saved and can be resumed later.
+
+                                                                   *:KiroNew*
+:KiroNew                Start a new conversation in the same Kiro process.
+                        Equivalent to "/chat new" in the terminal.
+
+                                                          *:KiroResumePicker*
+:KiroResumePicker       Open the session picker to resume a previously
+                        saved conversation.
+
+                                                                   *:KiroAsk*
+:KiroAsk                Ask a follow-up question in the current conversation.
+                        Prompts for input and sends to Kiro.
+
+                                                                 *:KiroReview*
+:KiroReview             Review the current file in read-only advisory mode.
+                        Sends the file to Kiro with instructions not to
+                        modify files directly.
+
+                                                             *:KiroSelection*
+:KiroSelection          Open the action menu for the current visual selection.
+                        Must be called from visual mode. Presents 9 preset
+                        actions to perform on the selected code.
+
+                                                          *:KiroAskSelection*
+:KiroAskSelection       Ask a custom question about the visual selection.
+                        Prompts for input and sends selected code with
+                        your question to Kiro.
+
+==============================================================================
+6. KEYBINDINGS                                       *kiro-review-keybindings*
+
+Normal Mode~
+                                                               *<leader>kc*
+<leader>kc              Open or focus Kiro chat window
+
+                                                               *<leader>ko*
+<leader>ko              Toggle Kiro window visibility
+
+                                                               *<leader>kh*
+<leader>kh              Hide Kiro window (keep process running)
+
+                                                               *<leader>kq*
+<leader>kq              Ask a question in current conversation
+
+                                                               *<leader>kr*
+<leader>kr              Review current file
+
+                                                               *<leader>kn*
+<leader>kn              Start new conversation
+
+                                                               *<leader>kl*
+<leader>kl              Load saved session (resume picker)
+
+                                                               *<leader>ks*
+<leader>ks              Stop Kiro process
+
+Visual Mode~
+                                                          *v_<leader>ka*
+<leader>ka              Open action menu for selected code
+
+                                                          *v_<leader>kq*
+<leader>kq              Ask custom question about selection
+
+Terminal Mode~
+                                                             *t_<Esc><Esc>*
+<Esc><Esc>              Exit terminal mode
+
+                                                                  *t_CTRL-Q*
+<C-q>                   Hide Kiro window from terminal mode
+
+==============================================================================
+7. VISUAL SELECTION ACTIONS                             *kiro-review-actions*
+
+When you trigger the action menu with |:KiroSelection| or |v_<leader>ka|,
+you'll see 9 preset actions:
+
+1. Review               Analyze code quality, maintainability, and design
+2. Explain              Detailed explanation of purpose and flow
+3. Improve              Suggest improvements and modern practices
+4. Propose              Implementation suggestions (chat only)
+   Implementation
+5. Find Bugs            Detect bugs, race conditions, edge cases
+6. Generate Tests       Propose comprehensive unit tests
+7. Analyze Performance  Find performance bottlenecks and optimizations
+8. Analyze Security     Identify security vulnerabilities
+9. Ask Custom Question  Your own question about the selection
+
+Selection Context~
+
+Every selection sent to Kiro includes:
+  • File path and file type
+  • Line numbers (start and end)
+  • Selection type (character-wise, line-wise, or block-wise)
+  • The selected code in a properly formatted code fence
+
+==============================================================================
+8. WORKFLOWS                                           *kiro-review-workflows*
+
+Code Review Workflow~
+
+1. Open a file you want reviewed: >
+    :e src/my-code.js
+<
+2. Review the entire file: >
+    <leader>kr
+<
+3. Or select specific code and choose Review: >
+    V5j
+    <leader>ka
+    " Choose: 1 (Review)
+<
+
+Debug and Improve Workflow~
+
+1. Select problematic code: >
+    vjj
+    <leader>ka
+    " Choose: 5 (Find bugs)
+<
+2. After reviewing, ask for improvements: >
+    <leader>ka
+    " Choose: 3 (Improve)
+<
+
+Session Management~
+
+1. Start working: >
+    <leader>kc
+<
+2. Switch tasks (save session): >
+    <leader>ks
+<
+3. Resume later: >
+    <leader>kl
+<
+
+==============================================================================
+9. TROUBLESHOOTING                               *kiro-review-troubleshooting*
+
+Kiro won't start~
+
+If you see "Unable to start Kiro CLI":
+  • Verify kiro-cli is installed: `which kiro-cli`
+  • Test in terminal: `kiro-cli chat --help`
+  • Check PATH in Neovim: `:echo $PATH`
+
+Terminal appears blank~
+
+  • Press `i` to enter insert mode
+  • Try stopping and restarting: >
+    :KiroStop
+    :KiroOpen
+<
+
+Session not resuming~
+
+  • Kiro CLI manages sessions per directory
+  • Verify working directory: `:pwd`
+  • Try session picker: >
+    :KiroResumePicker
+<
+
+Visual selection not working~
+
+  • Ensure you're in visual mode (`v`, `V`, or `<C-v>`)
+  • Make sure you have an active selection before triggering menu
+  • Check buffer has content
+
+==============================================================================
+10. LICENSE                                             *kiro-review-license*
+
+MIT License
+
+Copyright (c) 2026
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
