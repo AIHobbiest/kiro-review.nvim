@@ -42,16 +42,16 @@ Key Features:
 3. INSTALLATION                                     *kiro-review-installation*
 
 Using vim-plug: >
-    Plug 'ahmedwaqar/kiro-review.nvim'
+    Plug 'AIHobbiest/kiro-review.nvim'
 <
 
 Using packer.nvim: >
-    use 'ahmedwaqar/kiro-review.nvim'
+    use 'AIHobbiest/kiro-review.nvim'
 <
 
 Using lazy.nvim: >
     {
-      'ahmedwaqar/kiro-review.nvim',
+      'AIHobbiest/kiro-review.nvim',
       keys = {
         { '<leader>kc', '<cmd>KiroOpen<cr>', desc = 'Open Kiro Chat' },
         { '<leader>ko', '<cmd>KiroToggle<cr>', desc = 'Toggle Kiro Window' },

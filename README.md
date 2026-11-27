@@ -43,20 +43,20 @@ When you select code in visual mode and trigger the action menu (`<leader>ka`), 
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'ahmedwaqar/kiro-review.nvim'
+Plug 'AIHobbiest/kiro-review.nvim'
 ```
 
 ### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
-use 'ahmedwaqar/kiro-review.nvim'
+use 'AIHobbiest/kiro-review.nvim'
 ```
 
 ### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
-  'ahmedwaqar/kiro-review.nvim',
+  'AIHobbiest/kiro-review.nvim',
   keys = {
     { '<leader>kc', '<cmd>KiroOpen<cr>', desc = 'Open Kiro Chat' },
     { '<leader>ko', '<cmd>KiroToggle<cr>', desc = 'Toggle Kiro Window' },
@@ -72,7 +72,7 @@ use 'ahmedwaqar/kiro-review.nvim'
 # For Unix/Linux/macOS
 mkdir -p ~/.local/share/nvim/site/pack/local/start
 cd ~/.local/share/nvim/site/pack/local/start
-git clone https://github.com/ahmedwaqar/kiro-review.nvim.git
+git clone https://github.com/AIHobbiest/kiro-review.nvim.git
 ```
 
 ## Configuration
@@ -292,7 +292,7 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 ### Development Setup
 
 ```bash
-git clone https://github.com/ahmedwaqar/kiro-review.nvim.git
+git clone https://github.com/AIHobbiest/kiro-review.nvim.git
 cd kiro-review.nvim
 
 # Test in local Neovim
@@ -315,5 +315,3 @@ MIT License - see [LICENSE](LICENSE) file for details
 - [sriram-mv/kiro.nvim](https://github.com/sriram-mv/kiro.nvim) - Tmux popup integration
 
 ---
-
-**Note**: Replace `ahmedwaqar` with your actual GitHub username before publishing.
