@@ -34,7 +34,7 @@ When you select code in visual mode and trigger the action menu (`<leader>ka`), 
 
 ## Requirements
 
-- **Neovim** 0.5.0 or higher
+- **Neovim** 0.8.0 or higher
 - **[Kiro CLI](https://www.kiro.ai/)** installed and configured
 - Terminal with proper ANSI color support (recommended)
 
@@ -46,24 +46,38 @@ When you select code in visual mode and trigger the action menu (`<leader>ka`), 
 Plug 'AIHobbiest/kiro-review.nvim'
 ```
 
+No further setup is needed.
+
 ### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use 'AIHobbiest/kiro-review.nvim'
 ```
 
-### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+### Using [lazy.nvim](https://github.com/folke/lazy.nvim) / LazyVim
 
 ```lua
 {
   'AIHobbiest/kiro-review.nvim',
+  -- Lazy-load on first use. The plugin creates the mappings itself;
+  -- these entries only tell lazy.nvim when to load it.
+  cmd = { 'KiroOpen', 'KiroToggle', 'KiroReview', 'KiroSelection' },
   keys = {
-    { '<leader>kc', '<cmd>KiroOpen<cr>', desc = 'Open Kiro Chat' },
-    { '<leader>ko', '<cmd>KiroToggle<cr>', desc = 'Toggle Kiro Window' },
-    { '<leader>kr', '<cmd>KiroReview<cr>', desc = 'Review Current File' },
-    { '<leader>ka', '<cmd>KiroSelection<cr>', mode = 'x', desc = 'Kiro Selection Menu' },
+    { '<leader>kc', desc = 'Kiro: open chat' },
+    { '<leader>ko', desc = 'Kiro: toggle window' },
+    { '<leader>kr', desc = 'Kiro: review current file' },
+    { '<leader>ka', mode = 'x', desc = 'Kiro: selection actions' },
   },
+  opts = {}, -- passed to require('kiro').setup(opts); see Configuration
 }
+```
+
+In LazyVim, put this in `lua/plugins/kiro.lua` (return the table inside another
+table: `return { { 'AIHobbiest/kiro-review.nvim', ... } }`). To get a `<leader>k`
+group in which-key:
+
+```lua
+{ 'folke/which-key.nvim', opts = { spec = { { '<leader>k', group = 'kiro' } } } }
 ```
 
 ### Manual Installation
@@ -77,26 +91,40 @@ git clone https://github.com/AIHobbiest/kiro-review.nvim.git
 
 ## Configuration
 
-### Default Settings
+Configuration is optional: the plugin works out of the box. Priority, highest
+first: `setup()` options, `g:kiro_*` variables, built-in defaults. Values are read
+when used, so a later `setup()` call still applies.
 
-The plugin works out of the box with sensible defaults:
+| Option | Variable | Default | Description |
+|--------|----------|---------|-------------|
+| `chat_width` | `g:kiro_chat_width` | `65` | Width of the vertical split |
+| `agent` | `g:kiro_agent` | `'nvim-reviewer'` | Kiro agent to use |
+| `mappings` | `g:kiro_no_mappings` (set to `1` to disable) | `true` | Install the default key mappings |
 
-```vim
-let g:kiro_chat_width = 65        " Width of the vertical split
-let g:kiro_agent = 'nvim-reviewer' " Kiro agent to use
+### init.lua
+
+```lua
+require('kiro').setup({
+  chat_width = 80,
+  agent = 'kiro_default',
+  mappings = true,
+})
 ```
 
-### Customization
-
-Add these to your `init.vim` or `init.lua` (before the plugin loads):
+### init.vim
 
 ```vim
-" Change the width of the Kiro window
 let g:kiro_chat_width = 80
-
-" Use a different Kiro agent
 let g:kiro_agent = 'kiro_default'
+let g:kiro_no_mappings = 1   " optional: skip the default mappings
 ```
+
+Set the variables before the plugin loads. From init.vim you can also call
+`lua require('kiro').setup({ chat_width = 80 })`.
+
+### lazy.nvim / LazyVim
+
+Use `opts = { chat_width = 80, agent = 'kiro_default' }` (see Installation).
 
 ## Usage
 
@@ -226,26 +254,36 @@ Every visual selection sent to Kiro includes:
 
 ## Customizing Keybindings
 
-To use your own keybindings, you can either:
+The default mappings overwrite existing mappings with the same keys. To use your
+own, disable the defaults (`mappings = false` or `let g:kiro_no_mappings = 1`) and
+map the commands, the Lua API, or the Vimscript functions.
 
-### Option 1: Remap in your vimrc
+### Lua
+
+```lua
+require('kiro').setup({ mappings = false })
+
+vim.keymap.set('n', '<leader>ai', require('kiro').open, { desc = 'Kiro: open' })
+vim.keymap.set('n', '<leader>at', require('kiro').toggle, { desc = 'Kiro: toggle' })
+-- Leave Visual mode first so the '< and '> marks are set.
+vim.keymap.set('x', '<leader>as', '<Esc><Cmd>KiroSelection<CR>', { desc = 'Kiro: selection' })
+```
+
+### Vimscript
 
 ```vim
-" Unmap defaults (optional)
-nunmap <leader>kc
+let g:kiro_no_mappings = 1
 
-" Create your own mappings
 nnoremap <leader>ai :call KiroChatWindow()<CR>
 nnoremap <leader>at :call KiroToggleWindow()<CR>
 xnoremap <leader>as <Esc>:call KiroSelectionMenu()<CR>
 ```
 
-### Option 2: Use commands directly
+### Lua API
 
-```vim
-nnoremap <C-k> :KiroToggle<CR>
-nnoremap <C-r> :KiroReview<CR>
-```
+`open`, `close`, `toggle`, `stop`, `new_chat`, `resume_picker`, `ask`, `review`,
+`selection_menu`, `ask_selection`, `kill_all`, `status`, `send_text(text)` and
+`config()`, all on `require('kiro')`.
 
 ## Troubleshooting
 
@@ -295,8 +333,12 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 git clone https://github.com/AIHobbiest/kiro-review.nvim.git
 cd kiro-review.nvim
 
-# Test in local Neovim
-nvim -u NONE -c "set runtimepath+=. | source plugin/kiro.vim"
+# Try it in a clean Neovim
+nvim -u NONE -c "set runtimepath+=." -c "runtime plugin/kiro.lua"
+
+# Run the test-suite (needs plenary.nvim; set PLENARY_DIR if it is not in
+# ~/.local/share/nvim/lazy/plenary.nvim). Tests use a stub kiro-cli.
+tests/run.sh
 ```
 
 ## License

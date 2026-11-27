@@ -34,7 +34,7 @@ Key Features:
 ==============================================================================
 2. REQUIREMENTS                                     *kiro-review-requirements*
 
-  • Neovim 0.5.0 or higher
+  • Neovim 0.8.0 or higher
   • Kiro CLI installed and configured (https://www.kiro.ai/)
   • Terminal with ANSI color support (recommended)
 
@@ -49,15 +49,22 @@ Using packer.nvim: >
     use 'AIHobbiest/kiro-review.nvim'
 <
 
-Using lazy.nvim: >
+Using lazy.nvim / LazyVim: >
     {
       'AIHobbiest/kiro-review.nvim',
+      cmd = { 'KiroOpen', 'KiroToggle', 'KiroReview', 'KiroSelection' },
       keys = {
-        { '<leader>kc', '<cmd>KiroOpen<cr>', desc = 'Open Kiro Chat' },
-        { '<leader>ko', '<cmd>KiroToggle<cr>', desc = 'Toggle Kiro Window' },
+        { '<leader>kc', desc = 'Kiro: open chat' },
+        { '<leader>ko', desc = 'Kiro: toggle window' },
+        { '<leader>kr', desc = 'Kiro: review current file' },
+        { '<leader>ka', mode = 'x', desc = 'Kiro: selection actions' },
       },
+      opts = {},
     }
 <
+The `keys` entries above only tell lazy.nvim when to load the plugin; the
+mappings themselves are created by the plugin. `opts` is passed to
+|kiro-review-setup|.
 
 Manual installation:
   1. Clone the repository to your Neovim plugin directory
@@ -66,7 +73,21 @@ Manual installation:
 ==============================================================================
 4. CONFIGURATION                                   *kiro-review-configuration*
 
+Configuration is optional. The plugin works with no setup at all. Priority
+(highest first): |kiro-review-setup| options, global variables, defaults.
+Values are read when used, so late changes apply.
+
+                                                          *kiro-review-setup*
+require('kiro').setup({opts})
+    Lua configuration (init.lua, lazy.nvim `opts`). Options: >
+        require('kiro').setup({
+          chat_width = 65,           -- width of the vertical split
+          agent = 'nvim-reviewer',   -- Kiro agent to use
+          mappings = true,           -- install the default mappings
+        })
+<
 Global Variables~
+(for init.vim; set them before the plugin loads)
 
 *g:kiro_chat_width*
     Width of the Kiro terminal window in columns.
@@ -79,6 +100,36 @@ Global Variables~
     Default: 'nvim-reviewer' >
         let g:kiro_agent = 'kiro_default'
 <
+
+*g:kiro_no_mappings*
+    Set to 1 to skip the default mappings (see |kiro-review-keybindings|). >
+        let g:kiro_no_mappings = 1
+<
+
+Lua API~
+
+    require('kiro').open()            |:KiroOpen|
+    require('kiro').close()           |:KiroClose|
+    require('kiro').toggle()          |:KiroToggle|
+    require('kiro').stop()            |:KiroStop|
+    require('kiro').new_chat()        |:KiroNew|
+    require('kiro').resume_picker()   |:KiroResumePicker|
+    require('kiro').ask()             |:KiroAsk|
+    require('kiro').review()          |:KiroReview|
+    require('kiro').selection_menu()  |:KiroSelection|
+    require('kiro').ask_selection()   |:KiroAskSelection|
+    require('kiro').kill_all()        |:KiroKillAll|
+    require('kiro').status()          |:KiroStatus|
+    require('kiro').send_text({text}) send text to the chat
+    require('kiro').config()          resolved configuration
+
+Vimscript functions~
+
+The functions KiroChatWindow(), KiroCloseWindow(), KiroToggleWindow(),
+KiroStop(), KiroSendText({text}), KiroAsk(), KiroNewChat(),
+KiroResumePicker(), KiroReviewCurrentFile(), KiroSelectionMenu(),
+KiroAskSelection(), KiroKillAll() and KiroStatus() are still defined, so
+mappings like `nnoremap <leader>ai :call KiroChatWindow()<CR>` keep working.
 
 ==============================================================================
 5. COMMANDS                                             *kiro-review-commands*
@@ -128,8 +179,20 @@ Global Variables~
                         Prompts for input and sends selected code with
                         your question to Kiro.
 
+                                                               *:KiroKillAll*
+:KiroKillAll            Kill every running `kiro-cli chat` process on the
+                        machine, including ones started elsewhere.
+
+                                                                *:KiroStatus*
+:KiroStatus             Show this plugin's Kiro buffer and job, and the PIDs
+                        of all running `kiro-cli chat` processes.
+
 ==============================================================================
 6. KEYBINDINGS                                       *kiro-review-keybindings*
+
+These are installed by default. Disable them with `mappings = false` in
+|kiro-review-setup| or `let g:kiro_no_mappings = 1`. They overwrite existing
+mappings with the same keys.
 
 Normal Mode~
                                                                *<leader>kc*

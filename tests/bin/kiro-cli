@@ -1,0 +1,7 @@
+#!/bin/sh
+# Stub for the real kiro-cli used by the test-suite: record the arguments (when
+# KIRO_STUB_ARGS is set), then stay alive and echo input.
+if [ -n "$KIRO_STUB_ARGS" ]; then
+  printf '%s\n' "$@" > "$KIRO_STUB_ARGS"
+fi
+exec cat
